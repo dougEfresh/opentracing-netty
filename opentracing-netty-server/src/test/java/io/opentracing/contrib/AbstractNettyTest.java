@@ -13,6 +13,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.opentracing.contrib.netty.NettyHttpSpanDecorator;
 import io.opentracing.contrib.netty.NettyTracingServerHandler;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.util.GlobalTracer;
 import io.opentracing.util.ThreadLocalScopeManager;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -31,19 +32,21 @@ public abstract class AbstractNettyTest {
   EventLoopGroup parentGroup;
   EventLoopGroup childGroup;
   int port;
-  protected MockTracer mockTracer;
-
+  static MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
+  static {
+    GlobalTracer.register(mockTracer);
+  }
   abstract List<NettyHttpSpanDecorator> decorators();
 
   @Before
   public void beforeTest() throws Exception {
-    mockTracer = Mockito.spy(new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP));
     stop();
     parentGroup = new NioEventLoopGroup(1);
     childGroup = new NioEventLoopGroup();
 
     ServerBootstrap b = new ServerBootstrap();
     b.option(ChannelOption.SO_BACKLOG, 1024);
+    b.childOption(ChannelOption.SO_KEEPALIVE, true);
     ChannelInitializer<Channel> initializer = new ChannelInitializer<Channel>() {
       @Override
       protected void initChannel(final Channel ch) throws Exception {

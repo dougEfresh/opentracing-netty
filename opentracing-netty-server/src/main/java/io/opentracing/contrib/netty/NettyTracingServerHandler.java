@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -78,6 +79,7 @@ public class NettyTracingServerHandler extends ChannelDuplexHandler {
     final Span span = tracer.buildSpan(request.getMethod().name())
                               .asChildOf(extractedContext)
                               .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER).start();
+
     ctx.channel().attr(NettyHttpTracing.SPAN_ATTRIBUTE).set(span);
 
     for (NettyHttpSpanDecorator decorator : decorators) {
@@ -88,7 +90,7 @@ public class NettyTracingServerHandler extends ChannelDuplexHandler {
       }
     }
 
-    try {
+    try(Scope scope = tracer.scopeManager().activate(span, false)) {
       ctx.fireChannelRead(msg);
     } catch (Exception e) {
       Tags.ERROR.set(span, Boolean.TRUE);

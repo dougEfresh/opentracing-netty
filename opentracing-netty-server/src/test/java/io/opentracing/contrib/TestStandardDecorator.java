@@ -33,6 +33,16 @@ public class TestStandardDecorator extends AbstractNettyTest {
     List<MockSpan> mockSpans = mockTracer.finishedSpans();
     assertTrue(mockSpans.isEmpty());
   }
+  @Test
+  public void verifyScope() throws Exception {
+    Request request = new Request.Builder().url(url("/scope")).build();
+    try (Response response = client.newCall(request).execute()) {
+      assertTrue(response.isSuccessful());
+      assertEquals("ok", response.body().string());
+    }
+    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    assertFalse(mockSpans.isEmpty());
+  }
 
 
   @Test

@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 
 class Handler extends ChannelInboundHandlerAdapter {
@@ -48,6 +49,12 @@ class Handler extends ChannelInboundHandlerAdapter {
         content = "bar";
       } else if (path.equals("/health")) {
         content = "ok";
+      } else if (path.equals("/scope")) {
+        if (GlobalTracer.get().activeSpan() != null) {
+          content = "ok";
+        } else {
+          content = "no span";
+        }
       } else if (path.equals("/extra")) {
         content = "extra";
         //content = ExtraFieldPropagation.get(EXTRA_KEY);
