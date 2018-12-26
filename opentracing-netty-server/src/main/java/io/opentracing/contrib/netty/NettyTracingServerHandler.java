@@ -90,7 +90,7 @@ public class NettyTracingServerHandler extends ChannelDuplexHandler {
       }
     }
 
-    try(Scope scope = tracer.scopeManager().activate(span, false)) {
+    try (Scope scope = tracer.scopeManager().activate(span, false)) {
       ctx.fireChannelRead(msg);
     } catch (Exception e) {
       Tags.ERROR.set(span, Boolean.TRUE);

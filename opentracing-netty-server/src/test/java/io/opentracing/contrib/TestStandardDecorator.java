@@ -30,9 +30,10 @@ public class TestStandardDecorator extends AbstractNettyTest {
     try (Response response = client.newCall(request).execute()) {
       assertTrue(response.isSuccessful());
     }
-    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    List<MockSpan> mockSpans = MOCK_TRACER.finishedSpans();
     assertTrue(mockSpans.isEmpty());
   }
+  
   @Test
   public void verifyScope() throws Exception {
     Request request = new Request.Builder().url(url("/scope")).build();
@@ -40,7 +41,7 @@ public class TestStandardDecorator extends AbstractNettyTest {
       assertTrue(response.isSuccessful());
       assertEquals("ok", response.body().string());
     }
-    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    List<MockSpan> mockSpans = MOCK_TRACER.finishedSpans();
     assertFalse(mockSpans.isEmpty());
   }
 
@@ -52,7 +53,7 @@ public class TestStandardDecorator extends AbstractNettyTest {
       assertTrue(response.isSuccessful());
     }
     Awaitility.await().until(reportedSpansSize(), IsEqual.equalTo(1));
-    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    List<MockSpan> mockSpans = MOCK_TRACER.finishedSpans();
     assertFalse(mockSpans.isEmpty());
     MockSpan mockSpan = mockSpans.get(0);
     assertNotNull(mockSpan.operationName());
@@ -74,7 +75,7 @@ public class TestStandardDecorator extends AbstractNettyTest {
       assertFalse(response.isSuccessful());
     }
     Awaitility.await().until(reportedSpansSize(), IsEqual.equalTo(1));
-    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    List<MockSpan> mockSpans = MOCK_TRACER.finishedSpans();
     assertFalse(mockSpans.isEmpty());
     MockSpan mockSpan = mockSpans.get(0);
     assertNotNull(mockSpan.operationName());

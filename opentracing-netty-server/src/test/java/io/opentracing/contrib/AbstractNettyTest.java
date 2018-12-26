@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import okhttp3.OkHttpClient;
 import org.junit.After;
 import org.junit.Before;
-import org.mockito.Mockito;
 
 
 /**
@@ -32,11 +31,17 @@ public abstract class AbstractNettyTest {
   EventLoopGroup parentGroup;
   EventLoopGroup childGroup;
   int port;
-  static MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
-  static {
-    GlobalTracer.register(mockTracer);
-  }
+
   abstract List<NettyHttpSpanDecorator> decorators();
+
+  static MockTracer MOCK_TRACER = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
+
+  @org.junit.BeforeClass
+  public static void tracer() {
+    if (!GlobalTracer.isRegistered()) {
+      GlobalTracer.register(MOCK_TRACER);
+    }
+  }
 
   @Before
   public void beforeTest() throws Exception {
@@ -52,7 +57,7 @@ public abstract class AbstractNettyTest {
       protected void initChannel(final Channel ch) throws Exception {
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
-        p.addLast(new NettyTracingServerHandler(mockTracer,
+        p.addLast(new NettyTracingServerHandler(MOCK_TRACER,
                                                 decorators(),
                                                 Pattern.compile("/health")));
         p.addLast(new Handler());
@@ -76,14 +81,14 @@ public abstract class AbstractNettyTest {
     if (childGroup != null) {
       childGroup.shutdownGracefully();
     }
-    mockTracer.reset();
+    MOCK_TRACER.reset();
   }
 
   Callable<Integer> reportedSpansSize() {
     return new Callable<Integer>() {
       @Override
       public Integer call() throws Exception {
-        return mockTracer.finishedSpans().size();
+        return MOCK_TRACER.finishedSpans().size();
       }
     };
   }

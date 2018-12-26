@@ -31,7 +31,7 @@ public class TestMultipleDecorators extends AbstractNettyTest {
       assertTrue(response.isSuccessful());
     }
     Awaitility.await().until(reportedSpansSize(), IsEqual.equalTo(1));
-    List<MockSpan> mockSpans = mockTracer.finishedSpans();
+    List<MockSpan> mockSpans = MOCK_TRACER.finishedSpans();
     MockSpan mockSpan = mockSpans.get(0);
     assertNotNull(mockSpan.operationName());
     assertEquals("customOperationName", mockSpan.operationName());
