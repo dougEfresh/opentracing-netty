@@ -3,7 +3,8 @@
 
 # OpenTracing Java Netty Server Instrumentation
 
-This library provides instrumentation for Java Netty Server applications.
+This library provides instrumentation tracing decorators for [Netty's Http Codec](https://github.com/netty/netty/tree/4.1/codec-http) 4.x.
+
 
 ## Initialization
 
